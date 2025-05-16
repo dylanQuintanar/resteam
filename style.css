@@ -1,0 +1,263 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+header, main, footer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    margin-left: calc(33% + 20px);  /* Space for Glean app + padding */
+    margin-right: clamp(300px, calc(20vw + 40px), 440px); /* Responsive notes margin */
+    text-align: center;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Section Styles */
+section {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+section h2 {
+    margin-top: 0;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+/* Footer Styles */
+footer {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode header, 
+body.dark-mode main, 
+body.dark-mode footer {
+    background-color: #1e1e1e;
+}
+
+body.dark-mode h1, 
+body.dark-mode h2 {
+    color: #ffffff;
+}
+
+body.dark-mode a {
+    color: #80bfff;
+}
+
+body.dark-mode section {
+    background-color: #1e1e1e;
+    box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode footer {
+    color: #999;
+}
+
+/* Details Styles */
+details {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    transition: max-height 0.3s ease-out;
+}
+
+details summary {
+    cursor: pointer;
+    padding: 0.5rem;
+    font-weight: bold;
+}
+
+body.dark-mode details {
+    background-color: #2d2d2d;
+}
+
+details[open] summary {
+    margin-bottom: 0.5rem;
+}
+
+/* Sticky Notes Styles */
+.sticky-notes {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: clamp(280px, 20vw, 400px); /* Responsive width */
+    height: 90vh;
+    background-color: var(--dark-section);
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.sticky-notes h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.sticky-notes textarea {
+    width: 100%;
+    height: calc(100% - 80px);
+    border: 1px solid var(--dark-border);
+    border-radius: 4px;
+    padding: 10px;
+    resize: none;
+    font-family: inherit;
+    margin-bottom: 10px;
+    font-size: clamp(14px, 1vw, 16px); /* Responsive font size */
+}
+
+/* Dark mode styles for sticky notes */
+body.dark-mode .sticky-notes {
+    background-color: #1e1e1e;
+}
+
+body.dark-mode .sticky-notes h3 {
+    color: #ffffff;
+}
+
+body.dark-mode .sticky-notes textarea {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+/* Notes Buttons Styles */
+.notes-buttons {
+    margin-top: auto;
+    display: flex;
+    gap: 10px;
+    padding-bottom: 10px;
+}
+
+.notes-buttons button {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+}
+
+.notes-buttons button:hover {
+    background-color: #0056b3;
+}
+
+/* Dark mode styles for buttons */
+body.dark-mode .notes-buttons button {
+    background-color: #4a4a4a;
+}
+
+body.dark-mode .notes-buttons button:hover {
+    background-color: #666;
+}
+
+/* Sticky Email Styles */
+.sticky-email {
+    position: fixed;
+    top: 20px;
+    left: 10px;
+    width: 280px;
+    height: 90vh;
+    background-color: transparent; /* Changed from #fff to transparent */
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+/* Update the #glean-app styles */
+#glean-app {
+    position: fixed;
+    top: 20px;
+    left: 10px;
+    width: 33%;
+    height: 90vh;
+    border: none;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: transparent;
+    z-index: 1000;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    position: relative;
+    background-color: var(--dark-section);
+    margin: 2% auto;
+    padding: 20px;
+    width: 90%;
+    height: 90%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    color: var(--dark-text);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2001;
+}
+
+.close-button:hover {
+    color: #ff6b6b;
+}
+
+#modalIframe {
+    width: 100%;
+    height: calc(100% - 20px);
+    border: none;
+    margin-top: 20px;
+}

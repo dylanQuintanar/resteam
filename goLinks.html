@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glean Go Links</title>
+    <style>
+        :root {
+            --dark-bg: #1a1a1a;
+            --dark-section: #2d2d2d;
+            --dark-text: #e0e0e0;
+            --dark-link: #80bfff;
+            --dark-border: #404040;
+            --dark-input: #333;
+            --dark-button: #4a4a4a;
+            --dark-button-hover: #666;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        .page-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .go-links, .dynamic-links {
+            flex: 1;
+            padding: 20px;
+        }
+
+        #dynamicLinks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .dynamic-link {
+            background-color: var(--dark-section);
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid var(--dark-border);
+            height: fit-content;
+        }
+
+        h1, h2 {
+            color: var(--dark-text);
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 15px;
+            background-color: var(--dark-section);
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid var(--dark-border);
+            background-color: var(--dark-input);
+            color: var(--dark-text);
+        }
+
+        button {
+            padding: 8px 15px;
+            background-color: var(--dark-button);
+            color: var(--dark-text);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--dark-button-hover);
+        }
+
+        a {
+            color: var(--dark-link);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        @media (min-width: 1400px) {
+            #dynamicLinks {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 1399px) and (min-width: 1024px) {
+            #dynamicLinks {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 1023px) and (min-width: 768px) {
+            #dynamicLinks {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 767px) {
+            #dynamicLinks {
+                grid-template-columns: 1fr;
+            }
+            .page-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Resolution Team Go Links</h1>
+    
+
+    <h2>Quick Generate</h2>
+    <div id="dynamicLinks"></div>
+</div>
+</div>
+
+<script>
+    const dynamicLinks = [
+        { name: 'Open a jira', base: 'go/jira/', placeholder: 'Enter jira number (e.g., TDASH-111)' },
+        { name: 'NRDS search', base: 'go/nrds/', placeholder: 'Enter NRDS ID' },
+        { name: 'Impersonate a customer dashboard', base: 'go/impersonate/', placeholder: 'Enter customer\'s adv ID' },
+        { name: 'Update primary MLS set', base: 'go/primarymls/', placeholder: 'Enter full MLS set (e.g., A-SAUT-1320528)' },
+        { name: 'Find Master listing ID', base: 'go/ListingID/', placeholder: 'Enter MPRID' },
+        { name: 'View photos link and data for Bridge MLSs', base: 'go/bridge/', placeholder: 'Enter MLS code and listing key (e.g., riri/fae8f83e9cf3adff96e6464a80decee1)' },
+        { name: 'View photos for Spark MLSs', base: 'go/spark/', placeholder: 'Enter MLS code and listing ID (e.g., loky/1678380)' },
+        { name: 'View photos for MLSGrid MLSs', base: 'go/grid/', placeholder: 'Enter MLS code and MLS ID with prefix (e.g., orfl/MFRO6261449)' },
+        { name: 'Search listing by MLS ID on RDC', base: 'go/mlsid/', placeholder: 'Enter listing\'s MLS ID' },
+        { name: 'View property record API', base: 'go/publicrecord/', placeholder: 'Enter listing MPRID' },
+        { name: 'Open listing on RDC by MPRID', base: 'go/mprid/', placeholder: 'Enter listing MPRID' },
+        { name: 'Lead spam check', base: 'go/spam/', placeholder: 'Enter email/phone/message/IP' },
+        { name: 'View Lead JSON', base: 'go/leadjson/', placeholder: 'Enter Lead ID' },
+        { name: 'Open consumer account in Surface', base: 'go/surface/', placeholder: 'Enter Member ID' }
+    ];
+
+    const dynamicLinksContainer = document.getElementById('dynamicLinks');
+
+    dynamicLinks.forEach(link => {
+        const linkDiv = document.createElement('div');
+        linkDiv.className = 'dynamic-link';
+        linkDiv.innerHTML = `
+            <h3>${link.name}</h3>
+            <input type="text" 
+                id="${link.name.replace(/ /g, '_')}" 
+                placeholder="${link.placeholder}">
+            <button onclick="generateLink('${link.name.replace(/ /g, '_')}', '${link.base}')">
+                Generate Link
+            </button>
+            <div id="${link.name.replace(/ /g, '_')}_result"></div>
+        `;
+        dynamicLinksContainer.appendChild(linkDiv);
+    });
+
+    function generateLink(inputId, baseUrl) {
+        const input = document.getElementById(inputId);
+        const result = document.getElementById(inputId + '_result');
+        if (!input.value.trim()) {
+            result.innerHTML = '<span style="color: #ff6b6b;">Please enter a value</span>';
+            return;
+        }
+        const generatedLink = 'https://' + baseUrl + input.value.trim();
+        result.innerHTML = `Generated Link: <a href="${generatedLink}" target="_blank">${baseUrl}${input.value.trim()}</a>`;
+    }
+</script>
+</body>
+</html>

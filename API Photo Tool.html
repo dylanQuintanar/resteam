@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MLSGRID Photo Tool</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      * {
+        font-family: Verdana !important;
+      }
+
+      body {
+        background-color: lightgray;
+      }
+      ul,
+      li {
+        text-align: center;
+      }
+      li {
+        list-style: none;
+      }
+      img {
+        max-width: 50%;
+        max-height: 50%;
+        border: 3px solid black;
+      }
+      .bold {
+        font-weight: 700;
+        font-size: 20px;
+      }
+      a {
+        color: rgb(255, 0, 0);
+      }
+    </style>
+
+    <script>
+      var links = [];
+      var manual_links = [];
+
+      function parse_photos() {
+        document.getElementById("flip_photos_submit").disabled = true;
+        document.getElementById("manual_photos_submit").disabled = true;
+        document.getElementById("mls_grid_submit").disabled = true;
+        document.getElementById("flip_photos_reset").disabled = true;
+        document.getElementById("manual_photos_reset").disabled = true;
+        var mls_identifier = document.getElementById("mlsgrid_mls").value;
+        var mls_key = document.getElementById("mlsgrid_mls_key").value;
+        var mls_key_trimmed = mls_key.trim();
+        var mls_grid_api = mls_identifier + mls_key_trimmed;
+        e_message_one = `Please see the document "API/V2/ RESO/Rets Instructions" for more information on pulling photos for ${mls_identifier
+          .slice(71, 75)
+          .toUpperCase()}`;
+        if (mls_identifier === "") {
+          alert("Please Make A Selection in the GRID MLS Drop Down");
+        } else {
+          fetch(mls_grid_api)
+            .then((response) => {
+              if (!response.ok) {
+                throw Error("There is nothing here");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              console.log(data);
+              console.log(data.records[0].content["object.Photo"].Inventory);
+              var count = data.records[0].content["object.Photo"].Count;
+              console.log(data.records[0].content["object.Photo"].Count);
+              var items = data.records[0].content["object.Photo"].Inventory;
+              items.forEach(myFunction);
+              function myFunction(item) {
+                links.push(item.Url);
+              }
+              console.log(links);
+
+              let text = "";
+              let photo_number = 0;
+              for (var i = 0; i < links.length; i++) {
+                photo_number = i + 1;
+                text += `<li class="bold">${photo_number}<br>
+    <img src="${links[i]}" alt="${links[i]}"></li>`;
+              }
+              document.getElementById("images").innerHTML = text;
+              document.getElementById("photo_amount").innerHTML =
+                count + " Photo Results:";
+              document.getElementById("api_link").innerHTML =
+                "Api Link: " + mls_grid_api;
+            })
+            .catch((error) => {
+              alert(e_message_one);
+            });
+        }
+      }
+
+      function reset_page() {
+        location.reload();
+      }
+
+      function manual_photos() {
+        document.getElementById("flip_photos_submit").disabled = true;
+        document.getElementById("mls_grid_submit").disabled = true;
+        document.getElementById("manual_photos_submit").disabled = true;
+        document.getElementById("mls_grid_reset").disabled = true;
+        document.getElementById("flip_photos_reset").disabled = true;
+        var manual_mls_identifier =
+          document.getElementById("mls_manual_abbr").value;
+        var manual_mls_key = document.getElementById("mls_manual_id").value;
+        var manual_mls_key_trimmed = manual_mls_key.trim();
+        var manual_mls_identifier_trimmed = manual_mls_identifier.trim();
+        var manual_mls_identifier_trimmed_lc =
+          manual_mls_identifier_trimmed.toLowerCase();
+        var manual_mls_grid_api = `https://data-collection-records-api.listhub.moveaws.com/api/v1/records/${manual_mls_identifier_trimmed_lc}r.v2/Property?mlskey=${manual_mls_key_trimmed}`;
+        var e_message = `Please see the document API/V2/ RESO/Rets Instructions for more information on pulling photos for ${manual_mls_identifier_trimmed_lc.toUpperCase()}`;
+        if (manual_mls_identifier === "") {
+          alert("Please Enter the MLS Abbreviation with your Entry");
+        } else {
+          fetch(manual_mls_grid_api)
+            .then((response) => {
+              if (!response.ok) {
+                throw Error("There is nothing here");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              console.log(data);
+              console.log(data.records[0].content["object.Photo"].Inventory);
+              var manual_count = data.records[0].content["object.Photo"].Count;
+              console.log(data.records[0].content["object.Photo"].Count);
+              var manual_items =
+                data.records[0].content["object.Photo"].Inventory;
+              manual_items.forEach(myFunction);
+              function myFunction(manual_item) {
+                manual_links.push(manual_item.Url);
+              }
+              console.log(manual_links);
+              let manual_text = "";
+              let manual_photo_number = 0;
+              for (var j = 0; j < manual_links.length; j++) {
+                manual_photo_number = j + 1;
+                manual_text += `<li class="bold">${manual_photo_number}<br>
+    <img src="${manual_links[j]}" alt="${manual_links[j]}"></li>`;
+              }
+              document.getElementById("manual_links_images").innerHTML =
+                manual_text;
+              document.getElementById("manual_photo_amounts").innerHTML =
+                manual_count + " Photo Results:";
+              document.getElementById("manual_api_link").innerHTML =
+                "Api Link: " + manual_mls_grid_api;
+            })
+            .catch((error) => {
+              alert(e_message);
+            });
+        }
+      }
+
+      function flip_photos() {
+        var order = [];
+        var trimmed_order = [];
+        var order_link = [];
+
+        document.getElementById("mls_grid_submit").disabled = true;
+        document.getElementById("manual_photos_submit").disabled = true;
+        document.getElementById("flip_photos_submit").disabled = true;
+        document.getElementById("mls_grid_reset").disabled = true;
+        document.getElementById("manual_photos_reset").disabled = true;
+        var goreso_photo_links = document.getElementById("photo_links").value;
+        var trim_goreso_photo_links = goreso_photo_links.trim();
+        var split_goreso_photo_links = trim_goreso_photo_links.split(" ");
+
+        if (goreso_photo_links === "") {
+          alert(
+            "Please copy and paste the Order and Media URL columns into the Photo Links field"
+          );
+        } else {
+          split_goreso_photo_links.sort();
+          console.log(split_goreso_photo_links[1].slice(0, 2));
+          console.log(split_goreso_photo_links[1]);
+          let text = "";
+          let photo_number = 0;
+          for (var i = 0; i < split_goreso_photo_links.length; i++) {
+            photo_number = i + 1;
+
+            const e_message_two = `Please make sure you are only copying and pasting the Order and Media URL columns`;
+            if (isNaN(split_goreso_photo_links[i].slice(0, 2))) {
+              document.getElementById("photo_amounts").style.display = "none";
+
+              alert(e_message_two);
+              break;
+            } else {
+              text += `<li class="bold">${photo_number}<br>
+    <img src=${split_goreso_photo_links[i].slice(
+      2
+    )} alt=${split_goreso_photo_links[i].slice(2)}></li>`;
+            }
+          }
+          document.getElementById("photo_amounts").innerHTML =
+            split_goreso_photo_links.length + " Photo Results:";
+          document.getElementById("links_images").innerHTML = text;
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>MLSGRID Photo Tool</h1>
+    <h3>Please Choose an MLS:</h3>
+    <div>
+      <select name="mlsgrid_mls" id="mlsgrid_mls">
+        <option value="">Make a Selection</option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/peilr.v2/Property?mlskey=RMA"
+        >
+          (PEIL) RMLSAlliance
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/hltxr.v2/Property?mlskey=HLM"
+        >
+          (HLTX) HighlandLakes
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/orflr.v2/Property?mlskey=MFR"
+        >
+          (ORFL) StellarMLS
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/linyr.v2/Property?mlskey=ONE"
+        >
+          (LINY) OneKeyMLS
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/ininr.v2/Property?mlskey=MBR"
+        >
+          (ININ) MIBOR
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/chilr.v2/Property?mlskey=MRD"
+        >
+          (CHIL) MRED
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/newir.v2/Property?mlskey=RAN"
+        >
+          (NEWI) RANW
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/pwpar.v2/Property?mlskey=PWB"
+        >
+          (PWPA) PikeWayne
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/psazr.v2/Property?mlskey=PAR"
+        >
+          (PSAZ) PrescottArea
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/srpar.v2/Property?mlskey=GSB"
+        >
+          (SRPA) Scranton
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/autxr.v2/Property?mlskey=ACT"
+        >
+          (AUTX) UnlockMLS
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/huksr.v2/Property?mlskey=PRA"
+        >
+          (HUKS) MidKansasMLS
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/kcmor.v2/Property?mlskey=HMS"
+        >
+          (KCMO) Heartland
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/laksr.v2/Property?mlskey=LBR"
+        >
+          (LAKS) Lawrence
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/lcnmr.v2/Property?mlskey=LCN"
+        >
+          (LCNM) LasCruces
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/maksr.v2/Property?mlskey=FHR"
+        >
+          (MAKS) Manhattan
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/natnr.v2/Property?mlskey=RTC"
+        >
+          (NATN) Realtracs
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/nciar.v2/Property?mlskey=NOC"
+        >
+          (NCIA) NoCoastMLS
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/nwinr.v2/Property?mlskey=NRA"
+        >
+          (NWIN) NIRA
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/okokr.v2/Property?mlskey=OKC"
+        >
+          (OKOK) MLSOK
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/slmor.v2/Property?mlskey=MAR"
+        >
+          (SLMO) MARIS
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/spmor.v2/Property?mlskey=SOM"
+        >
+          (SPMO) SOMO
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/spwar.v2/Property?mlskey=SAR"
+        >
+          (SPWA) SpokaneREALTORS
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/wciar.v2/Property?mlskey=NBR"
+        >
+          (WCIA) NorthEastIARegional
+        </option>
+        <option
+          value="https://data-collection-records-api.listhub.moveaws.com/api/v1/records/wiksr.v2/Property?mlskey=SCK"
+        >
+          (WIKS) SouthCentralKS
+        </option>
+      </select>
+      <label>MLS_ID:</label>
+      <input id="mlsgrid_mls_key" type="text" name="surv_pid" />
+      <button id="mls_grid_submit" onclick="parse_photos()">Submit</button>
+      <button id="mls_grid_reset" onclick="reset_page()">Reset</button>
+    </div>
+    <br />
+    <div>
+      <label>Enter the MLS Abbreviations:</label>
+      <input id="mls_manual_abbr" type="text" name="mls_manual_abbr" />
+      <label>Enter the MLS ID:</label>
+      <input id="mls_manual_id" type="text" name="mls_manual_id" />
+      <button id="manual_photos_submit" onclick="manual_photos()">
+        Submit
+      </button>
+      <button id="manual_photos_reset" onclick="reset_page()">Reset</button
+      ><br />
+    </div>
+    <br />
+    <div>
+      <label for="photo_links">Photo Links</label>
+      <a
+        href="https://docs.google.com/document/d/1CbtGMF0PFqyQeKqbCFzx-crwCnXHX2RS-Ovvz2aC51M/edit?tab=t.0"
+        target="_blank"
+        >Directions</a
+      >
+      <input id="photo_links" type="text" name="photo_links" />
+      <button id="flip_photos_submit" onclick="flip_photos()">Submit</button>
+      <button id="flip_photos_reset" onclick="reset_page()">Reset</button><br />
+    </div>
+    <div>
+      <h3 id="api_link"></h3>
+      <h3 id="photo_amount"></h3>
+      <ul id="images"></ul>
+    </div>
+    <div>
+      <h3 id="photo_amounts"></h3>
+      <ul id="links_images"></ul>
+    </div>
+    <div>
+      <h3 id="manual_api_link"></h3>
+      <h3 id="manual_photo_amounts"></h3>
+      <ul id="manual_links_images"></ul>
+    </div>
+  </body>
+</html>

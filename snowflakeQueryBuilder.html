@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build a Query Tool</title>
+	<style>
+    :root {
+        --dark-bg: #1a1a1a;
+        --dark-section: #2d2d2d;
+        --dark-text: #e0e0e0;
+        --dark-link: #80bfff;
+        --dark-border: #404040;
+        --dark-button: #4a4a4a;
+        --dark-button-hover: #666;
+    }
+
+    body {
+        background-color: var(--dark-bg);
+        color: var(--dark-text);
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        padding: 20px;
+    }
+
+    fieldset {
+        border: 1px solid var(--dark-border);
+        border-radius: 4px;
+        margin: 10px 0;
+        padding: 15px;
+        background-color: var(--dark-section);
+    }
+
+    legend {
+        color: var(--dark-text);
+        padding: 0 10px;
+    }
+
+    button {
+        background-color: var(--dark-button);
+        color: var(--dark-text);
+        border: none;
+        border-radius: 4px;
+        padding: 8px 15px;
+        margin: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: var(--dark-button-hover);
+    }
+
+    #blue {
+        background-color: #0056b3;
+        color: white;
+    }
+
+    #red {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    textarea {
+        background-color: var(--dark-section);
+        color: var(--dark-text);
+        border: 1px solid var(--dark-border);
+        border-radius: 4px;
+        padding: 10px;
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    input[type="checkbox"] {
+        margin-right: 8px;
+    }
+
+    label {
+        color: var(--dark-text);
+    }
+
+    #chef {
+        background-color: var(--dark-section);
+        padding: 15px;
+        border-radius: 4px;
+        margin: 20px 0;
+    }
+
+    #set {
+        color: var(--dark-text);
+        padding-left: 20px;
+    }
+
+	#preview {
+	display: none;
+	}
+	#where{
+	display:inline-block;}
+	</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+	$(document).ready(function(){
+	$("#enter").click(function() {
+	var results = [];
+	 $.each($("input[name ='from']:checked"), function(){
+	 results.push($(this).val() /*+ "<br />"*/)});
+	
+	var last = results.pop();
+	console.log(last)
+  document.getElementById("beg").innerHTML = ""
+  
+  results.forEach(addResults);
+  
+  function addResults(x) { 
+    document.getElementById("beg").innerHTML = document.getElementById("beg").innerHTML + x + ", "
+  } 
+  
+	document.getElementById("beg").innerHTML = document.getElementById("beg").innerHTML + last;
+  
+
+	}
+	);
+	});
+	</script>
+	<script>
+function copyText() {
+  	var copy = document.getElementById("notes");
+  	copy.select();
+  	copy.setSelectionRange(0, 99999)
+  	document.execCommand("copy");
+  	alert("Copied the text: " + copy.value);
+	}
+  </script>
+  <script>
+  function myReset2() {
+ 		document.getElementById("notes").innerHTML = " ";
+      };
+  </script>
+  
+	<script> 
+	function lastTen(){
+advID = prompt('Advertiser ID')
+date = prompt('Enter date in format YYYY-MM-DD')  
+query = `SELECT
+    CONSUMER_CONTACT_EMAIL, PROPERTY_ID, SUBMITTED_DATETIME_UTC, RECEIVER_LEAD_TYPE, SUBMITTED_LEAD_ID, CONSUMER_FIRST_NAME, CONSUMER_LAST_NAME, CONSUMER_CONTACT_PHONE, CLIENT_IP_ADDRESS, CONSUMER_MESSAGE_SUBJECT, CONSUMER_MESSAGE_BODY, ADVERTISER_EMAIL AS Delivered_Email
+
+FROM
+    RDC_CORE.FACT.FCT_LEADS
+
+WHERE 
+	SUBMITTED_DATETIME_UTC >='${date}'
+	AND ADVERTISER_ID = '${advID}'
+ORDER BY 
+    SUBMITTED_DATETIME_UTC DESC
+LIMIT 10`
+
+
+document.getElementById("menu").innerHTML = query;}
+	</script>
+  
+	<script> function consumerCount(){
+email = prompt('Consumer Email (Seperate multiple emails with ','s)')
+date = prompt('Enter date in format YYYY-MM-DD')  
+query = `SELECT
+  consumer_contact_email,
+  COUNT(DISTINCT delivered_lead_id) AS lead_count,
+FROM
+  RDC_CORE.FACT.FCT_LEADS
+WHERE
+	submitted_datetime_utc >= '${date}'
+	AND consumer_contact_email IN ('${email}')
+GROUP BY
+  consumer_contact_email
+ORDER BY
+  consumer_contact_email DESC`
+
+document.getElementById("menu").innerHTML = query;}
+	</script>
+<script> function exclusiveCheck(){
+advID = prompt('Advertiser ID')
+date = prompt('Enter date in format YYYY-MM-DD')  
+query = `SELECT
+	consumer_contact_email, 
+	COUNT(DISTINCT submitted_lead_id) AS Num_Leads
+FROM 
+	RDC_CORE.FACT.FCT_LEADS
+WHERE 
+	submitted_datetime_utc >= '${date}'
+	AND consumer_contact_email IN (
+        SELECT 
+            consumer_contact_email
+        FROM
+            RDC_CORE.FACT.FCT_LEADS
+        WHERE
+            submitted_datetime_utc >= '${date}'
+            AND advertiser_id = '${advID}'
+            ORDER BY submitted_datetime_utc DESC
+            LIMIT 10 -- >> Returns 10 leads adjust if needed
+    )
+GROUP BY consumer_contact_email`
+
+document.getElementById("menu").innerHTML = query;}
+	</script>
+	<script> function marketVol(){
+zip = prompt('Zip')
+date = prompt('Enter date in format YYYY-MM-DD')  
+query = `SELECT
+    lead_zip,
+    COUNT(DISTINCT submitted_lead_id) AS NumLeads
+FROM
+    RDC_CORE.FACT.FCT_LEADS
+WHERE
+    submitted_datetime_utc >= '${date}'
+    AND lead_zip = '${zip}'
+    AND lead_type = 'co_broke'
+GROUP BY
+    lead_zip`
+
+document.getElementById("menu").innerHTML = query;}
+	</script>
+	
+ <script>
+          $(document).ready(function() {
+    $("button").click(function() {
+        var press = $(this).val();
+        if(press == "AND CONSUMER_CONTACT_EMAIL IN "){
+           var number = prompt("Enter one or more consumer emails." + "\n" + "NOTE: Please leave a space in between each email.");
+           
+        } if (press == "AND ADVERTISER_EMAIL IN "){
+            var number = prompt("Enter one or more customer emails." + "\n" + "NOTE: Please leave a space in between each email.");
+        } if (press == "AND LEAD_ZIP IN "){
+            var number = prompt("Enter one or more zip codes." + "\n" + "NOTE: Please leave a space in between each zip code.");
+        }
+        if (press == "AND LISTING_ID IN "){
+            var number = prompt("Enter one or more listing IDs." + "\n" + "NOTE: Please leave a space in between each listing ID.");
+        }
+        if (press == "AND PROPERTY_ID IN "){
+         		 var number = prompt("Enter one or more property IDs." + "\n" + "NOTE: Please leave a space in between each property ID.");
+		}
+		if (press == "AND SUBMITTED_DATETIME_UTC >= "){
+			var day = prompt("Please enter a date to search from in the format YYYY-MM-DD");
+			day = press + "'" + day + "'";
+			poss();
+		}	
+		if (press == "AND SUBMITTED_LEAD_ID IN "){
+			var number = prompt("Enter one or more lead IDs." + "\n" + "NOTE: Please leave a space in between each lead ID." + "\n" + "Lead IDs look like 111aa222-333a-44a5-6a6a-7aa7aa777aa7");
+		}
+		if (press == "AND LEAD_TYPE IN "){
+			var product = prompt("Enter the number for the product you would like to search by:" + "\n" + "The Choices are: 1 = rental basic mls, 2 = co broke, 3 = rental basic unit, 4 = rental basic community, 5 = consumer text, 6 = managed service, 7 =  market vip lead, 8 = advantage pro, 9 = new homes plan, 10 = basic, 11 = far, 12 = new homes tfn, 13 = rental go direct, 14 = essentials, 15 = mls new construction, 16 = seller");
+				if (product == 1) {prods = "rental_basic_mls"}
+				if (product == 2) {prods = "co_broke"}
+				if (product == 3) {prods = "rental_basic_unit"}
+				if (product == 4) {prods = "rental_basic_community"}
+				if (product == 5) {prods = "consumer_text"}
+				if (product == 6) {prods = "managed_service"}
+				if (product == 7) {prods = "market_vip_lead"}
+				if (product == 8) {prods = "advantage_pro"}
+				if (product == 9) {prods = "new_homes_plan"}
+				if (product == 10) {prods = "basic"}
+				if (product == 11) {prods = "FAR"}
+				if (product == 12) {prods = "new_homes_tfn"}
+				if (product == 13) {prods = "rental_go_direct"}
+				if (product == 14) {prods = "essentials"}
+				if (product == 15) {prods = "mls_new_construction"}
+				if (product == 16) {prods = "seller"}
+				else {"Please enter 1 - 16"};
+					product = press + "(" + "'" + prods + "'" + ")";
+					pro();
+		}	
+		if (press == "AND ADVERTISER_ID IN "){
+			var number = prompt("Enter one or more advertiser IDs." + "\n" + "NOTE: Please leave a space in between each advertiser ID.");
+		}	
+		if (press == "AND BILLING_REFERENCE_ID IN "){
+			var number = prompt("Enter one or more billing reference IDs." + "\n" + "NOTE: Please leave a space in between each lead ID." + "\n" + "Billing Reference IDs look like 02aa00000000AA0AAA");
+		}	
+		if (press == "AND VISITOR_ID IN "){
+			var number = prompt("Enter one or more visitor IDs." + "\n" + "NOTE: Please leave a space in between each visitor ID." + "\n" + "Visitor IDs look like c9m554v8-080v-6yu6-8hjf-dd2n1njr4t30");
+		}
+	if (press == "AND delivered_customer_name IN "){
+			var number = prompt("Enter one or more consumer names" + "\n" + "NOTE: Please leave a space in between each name."); 	
+		}	
+		if (press == "AND consumer_contact_method IN "){
+			var contactM = prompt("Enter the number for the type of contact method you would like to search by:" + "\n" + "1 = email, 2 = call, 3 = tfn call, 4 = text");
+			 		if (contactM == 1) {contactN = "email"}
+					if (contactM == 2) {contactN = "call"}
+					if (contactM == 3) {contactN = "tfn call"}
+					if (contactM == 4) {contactN = "text"}
+					else {"Please enter 1 - 4"};
+					contactM = press + "(" + "'" + contactN + "'" + ")";
+					con();
+		}	
+		if (press == "AND CONSUMER_CONTACT_PHONE IN "){
+			var telno = prompt("Please enter one 10 digit phone number");
+			phoneConverter();
+		}	
+		if (press == "AND CONSUMER_MESSAGE_BODY LIKE "){
+			var mess = prompt("Please enter a word or words from the message");
+			mess = press + "(" + "'" + "%" + mess + "%" + "'" + ")";
+			mail();
+		}
+		if (press == "AND consumer_contact_full_name IN "){
+			var nombre = prompt("Enter one or more consumer names." + "\n" + "NOTE: Please leave a space in between each consumer name.");
+			
+			fullName();
+		}	
+		if (press == "AND delivered.listing_status IN "){
+			var status = prompt("Enter the number for the listing status you would like to search by:" + "\n" + "1 = for sale, 2 = rental, 3 = not for sale");		
+					if (status == 1) {state = "for_sale"}
+					if (status == 2) {state = "rental"}
+					if (status == 3) {state = "not_for_sale"}
+					else {"Please enter 1 - 3"};
+					status = press + "(" + "'" + state + "'" + ")";
+					stat();
+		}
+		if (press == "limit"){
+			var leadNumber = prompt("Please enter the number of results you would like to pull.");
+			var star = press + " " + leadNumber;
+			console.log(leadNumber);
+			document.getElementById("numLimits").innerHTML = star; 
+		}
+		if (press == "AND delivered.lead_category_delivered IN "){
+			var category = prompt("Enter the number for the lead category you would like to search by:" + "\n" + "1 = basic mls email, 2 = connection for buyers paid, 3 = connection for buyers courtesy to rdc, 4 = basic rental unit, 5 = showcase rental community, 6 = basic call, 7 = schedule tour, 8 = basic rental community, 9 = advantage pro mls email, 10 = lender co marketing paid, 11 = basic rental unit call, 12 = far call, 13 = basic rental, 14 = community call, 15 = far email, 16 = rental tfn, 17 = audience extension, 18 = consumer text, 19 = new homes plan, 20 = email, 21 = veteran union email, 22 = seller broker paid email, 23 = advantage pro mls call, 24 = performance marketing");	
+					if (category == 1) {cats = "basic mls email"}
+					if (category == 2) {cats = "connection for buyers paid"}
+					if (category == 3) {cats = "connection for buyers courtesy to rdc"}
+					if (category == 4) {cats = "basic rental unit"}
+					if (category == 5) {cats = "showcase rental community"}
+					if (category == 6) {cats = "basic call"}
+					if (category == 7) {cats = "schedule tour"}
+					if (category == 8) {cats = "basic rental community"}
+					if (category == 9) {cats = "advantage pro mls email"}
+					if (category == 10) {cats = "lender co marketing paid"}
+					if (category == 11) {cats = "basic rental unit call"}
+					if (category == 12) {cats = "far call"}
+					if (category == 13) {cats = "basic rental"}
+					if (category == 14) {cats = "community call"}
+					if (category == 15) {cats = "far email"}
+					if (category == 16) {cats = "rental tfn"}
+					if (category == 17) {cats = "audience extension"}
+					if (category == 18) {cats = "consumer text"}
+					if (category == 19) {cats = "new homes plan"}
+					if (category == 20) {cats = "email"}
+					if (category == 21) {cats = "veteran union email"}
+					if (category == 22) {cats = "seller broker paid email"}
+					if (category == 23) {cats = "advantage pro mls call"}
+					if (category == 24) {cats = "performance marketing"}
+					else {"Please enter 1 - 24"};
+					category = press + "(" + "'" + cats + "'" + ")";
+					catnip();
+        };
+   console.log(nombre);
+
+        console.log(number);
+
+       var words = number.split(' ');
+       console.log(words);
+       var arrayLength = words.length;
+     
+         var i;
+         var result = '';
+         let ending;
+         var t;
+         var s;
+         var final;
+         
+         for (i = 0; i < arrayLength; i++) {
+             result += words[i] + "','";
+             final = result.split(' ');
+             t = final + ')';
+             s = t.replace(",')", ')')
+            ending  = press + "('" + s + "\n";
+};  
+	function fullName(){
+	const searchRegExp = /\W/gm;
+    const replaceWith = " ";
+    nombre = nombre.replace(searchRegExp, replaceWith);
+	console.log(nombre);
+	var all = `AND consumer_contact_full_name IN ('${nombre}')`;
+	$("#set").append(`<li>${all}</li>`);
+
+	};
+ pass();  
+         function pass(){
+        $("#set").append(`<li>${ending}</li>`);
+    };
+       function poss(){
+        $("#set").append(`<li>${day}</li>`);   
+       
+    };  
+	function con() {
+	$("#set").append(`<li>${contactM}</li>`);   
+	};
+	function mail() {
+	$("#set").append(`<li>${mess}</li>`); 
+	};
+	function stat() {
+	$("#set").append(`<li>${status}</li>`); 
+	};
+	function catnip() {
+	$("#set").append(`<li>${category}</li>`); 
+	};
+	function pro() {
+	$("#set").append(`<li>${product}</li>`); 
+	};
+
+       function phoneConverter(){
+       const searchRegExp = /\D/gm;
+    const replaceWith = "";
+       telno = telno.replace(searchRegExp, replaceWith);
+       
+        if (telno.length === 10) {
+           
+            const areaCode = telno.substring(0,3);
+            const prefix = telno.substring(3,6);
+            const lineNumber = telno.substring(6,10);
+   
+         
+           var  variation1 = `${areaCode}-${prefix}-${lineNumber}`;
+          var    variation2 = `(${areaCode})${prefix}-${lineNumber}`;
+           var  variation3 = `(${areaCode}) ${prefix}-${lineNumber}`;
+           
+           end = `AND consumer_contact_phone IN ('${telno}', '${variation1}','${variation2}','${variation3}')`
+           $("#set").append(`${end}` + "\n"); 
+
+     
+       
+     } else if (telno.length <= 9) {
+        alert("*Please enter 10 digits*");
+           
+     }
+   
+      else if (telno.length > 10) { 
+	  alert("*Only Enter 10 Digits*");
+	  
+	  }
+  };
+});  
+         });
+   
+   
+       
+     
+    </script>
+	
+	<script>
+	function drop() {
+
+	var complete = $("#chef").text();
+	document.getElementById("menu").innerHTML = `${complete}`;
+	}
+	</script>
+	<script>
+	function copyText() {
+  var copy = document.getElementById("menu");
+  copy.select();
+  copy.setSelectionRange(0, 99999)
+  document.execCommand("copy");
+  alert("Copied the text: " + copy.value);
+}
+	function myReset1(){
+	document.getElementById("menu").innerHTML = " ";
+	}
+	</script>	
+	<script>
+	function mush(){
+	document.getElementById("beg").innerHTML = " ";
+	document.getElementById("set").innerHTML = " ";
+	document.getElementById("numLimits").innerHTML = " ";
+	}
+	</script>
+</head>
+<body>
+<p id='preselect'></p>
+<button onclick="lastTen()" title="Returns last 10 leads sent to a customer">Last 10</button>
+<button onclick="consumerCount()" title="Returns count of leads submitted by a consumer">Consumer Count</button>
+<button onclick="exclusiveCheck()" title="Use when agent states exclusive leads are routing to multiple agents">Exclusivity Check</button>
+<button onclick="marketVol()" title="Determine count of C+ leads submitted in a zip code">Market Volume</button>
+
+
+
+<p>Pre-BuiltQueries</p>
+<p>Select</p>
+<!-- calendar to select the search date -->
+<input type="checkbox" class="vehicle" name="from" value="BILLING_REFERENCE_ID">
+  <label for="vehicle1">Billing Reference ID </label><br>
+<input type="checkbox" class="vehicle" name="from" value="LEAD_TYPE">
+  <label for="vehicle1">Lead Category </label><br>
+<input type="checkbox" class="vehicle" name="from" value="SUBMITTED_DATETIME_UTC">
+  <label for="vehicle1">Date/Time </label><br>
+<input type="checkbox" class="vehicle" name="from" value="SUBMITTED_LEAD_ID">
+  <label for="vehicle1">Lead ID </label><br>
+<input type="checkbox" class="vehicle" name="from" value="ADVERTISER_NAME">
+  <label for="vehicle1">Agent Name </label><br>
+<input type="checkbox" class="vehicle" name="from" value="CONSUMER_FIRST_NAME">
+  <label for="vehicle1">Consumer Name </label><br>
+<input type="checkbox" class="vehicle" name="from" value="CONSUMER_CONTACT_EMAIL">
+  <label for="vehicle1">Consumer Email </label><br>
+<input type="checkbox" class="vehicle" name="from" value="CONSUMER_CONTACT_PHONE">
+  <label for="vehicle1">Consumer Phone </label><br>
+<input type="checkbox" class="vehicle" name="from" value="PROPERTY_ID">
+  <label for="vehicle1">MPRID </label><br>
+<input type="checkbox" class="vehicle" name="from" value="LEAD_ZIP">
+ <label for="vehicle1">Postal Code </label><br>
+<input type="checkbox" class="vehicle" name="from" value="CONSUMER_MESSAGE_BODY"> 
+ <label for="vehicle1">Message </label><br>
+<input type="checkbox" class="vehicle" name="from" value="ADVERTISER_EMAIL">
+  <label for="vehicle1">Agent Email </label><br>
+<input type="checkbox" class="vehicle" name="from" value="ADVERTISER_ID">
+  <label for="vehicle1">Advertiser ID </label><br>
+<!--<input type="checkbox" class="vehicle" name="from" value="delivered.is_free_lead">
+  <label for="vehicle1">Free Lead </label><br>
+<input type="checkbox" class="vehicle" name="from" value="paid_type">
+  <label for="vehicle1">Paid </label><br>
+<input type="checkbox" class="vehicle" name="from" value="delivered.is_test_lead">
+  <label for="vehicle1">Test Lead </label><br> -->
+  <input type="checkbox" class="vehicle" name="from" value="VISITOR_ID">
+  <label for="vehicle1">Visitor ID </label><br><br>
+  
+  <input type="submit" id="enter" value="Submit">
+<p>From</p>
+<!--FROM "biz_data".lead_submitted_history AS SUBMITTED, "biz_data".lead_delivered_history AS DELIVERED
+WHERE submitted.submitted_lead_id = delivered.submitted_lead_id -->
+<div id='where'>
+<fieldset>
+<legend>Agent</legend>
+<button id='jam' name="subject" type="submit" value="AND ADVERTISER_EMAIL IN ">Customer Email</button>
+
+<button id='ben' name="subject" type="submit" value="AND ADVERTISER_ID IN ">Advertiser ID</button>
+<button id='bam' name="subject" type="submit" value="AND BILLING_REFERENCE_ID IN ">Billing Ref#</button> 
+</fieldset>
+<fieldset>
+<legend>Consumer</legend>
+<!--<button id='jim' name="subject" type="submit" value="AND consumer_contact_full_name IN ">Consumer Name</button> -->
+<button id='junk' name="subject" type="submit" value="AND CONSUMER_CONTACT_EMAIL IN ">Consumer Email</button>
+<button id='jam' name="subject" type="submit" value="AND CONSUMER_CONTACT_PHONE IN ">Consumer Phone Number</button>
+<button id='ben' name="subject" type="submit" value="AND CONSUMER_MESSAGE_BODY LIKE ">Message</button>
+<!--<button id='junk' name="subject" type="submit" value="AND consumer_contact_method IN ">Contact Method</button> -->
+</fieldset>
+<fieldset>
+<legend>Lead Info</legend>
+<button id='jam' name="subject" type="submit" value="AND SUBMITTED_LEAD_ID IN ">Lead ID</button>
+<button id='jim' name="subject" type="submit" value="AND LEAD_TYPE IN ">Lead Product</button>
+<!-- <button id='junk' name="subject" type="submit" value="AND delivered.lead_category_delivered IN ">Lead Category</button> -->
+<button id='visit' name="subject" type="submit" value="AND VISITOR_ID IN ">Visitor ID</button>
+</fieldset>
+<fieldset>
+<legend>Listing</legend>
+<button id='jim' name="subject" type="submit" value="AND LEAD_ZIP IN ">Zip Code</button>
+<button id='ben' name="subject" type="submit" value="AND LISTING_ID IN ">Listing ID</button>
+<button id='bam' name="subject" type="submit" value="AND PROPERTY_ID IN ">MPRID</button>    
+<!-- <button id='bam' name="subject" type="submit" value="AND delivered.listing_status IN ">Listing Status</button> -->
+</fieldset>    
+<fieldset>
+<legend>Date & Limit</legend>
+<button id='blue' name="subject" type="submit" value="limit">Number of Leads</button>
+<button id='red' name="subject" type="submit" value="AND SUBMITTED_DATETIME_UTC >= ">Date Range</button>
+</fieldset>
+</div>
+<div id="chef">
+<p>SELECT</p>
+<p id = "beg"></p>
+<p>FROM
+		RDC_CORE.FACT.FCT_LEADS <br>
+	WHERE SUBMITTED_LEAD_ID = SUBMITTED_LEAD_ID
+		</p>
+<ul id="set"></ul>
+<p id ="numLimits"></p>
+</div>
+
+<textarea id="menu" name="notes" rows="4" cols="50">
+</textarea><br>
+<button onclick="copyText()">Copy Text</button>
+<button class="clear" onclick="myReset1()">Reset</button>
+<button onclick="drop()">Drop</button>
+<button onclick="mush()">Clear</button>
+</body>
+</html>
+  
+<!-- Email response built out -->
+<!--talking point section -->

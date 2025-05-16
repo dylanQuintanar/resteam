@@ -21,7 +21,7 @@ body {
 
 header {
     background-color: var(--header-bg);
-    padding: 0.5rem;
+    padding: 0.5rem 2rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     position: fixed;
     top: 0;
@@ -29,7 +29,7 @@ header {
     right: 0;
     z-index: 1001;  /* Increased to ensure it's above other content */
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     height: 60px;
     backdrop-filter: none;  /* Remove any transparency */
@@ -271,4 +271,26 @@ details[open] summary {
     height: calc(100% - 20px);
     border: none;
     margin-top: 20px;
+}
+
+/* Calendar Button Styles */
+.calendar-btn {
+    color: var(--text);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-btn:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.calendar-btn .material-icons {
+    font-size: 24px;
 }

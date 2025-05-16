@@ -1,10 +1,6 @@
 // Implement dark mode toggle and set default
 document.body.classList.add('dark-mode'); // Add dark mode by default
 
-document.getElementById('darkModeToggle').addEventListener('click', function () {
-    document.body.classList.toggle('dark-mode');
-});
-
 // Save notes to localStorage
 const notesTextarea = document.getElementById('notes');
 

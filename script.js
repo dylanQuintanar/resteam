@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Render Glean App
 document.addEventListener('DOMContentLoaded', () => 
-    EmbeddedSearch.renderChat(document.getElementById('glean-app'), { applicationId: "eip4morbcxo0rs4s" })
+    EmbeddedSearch.renderChat(document.getElementById('glean-app'), { agentId: "d0ea8436ff694d5badc5cd26bdbde838" })
     )
 //window.EmbeddedSearch.renderChat(glean-search)
 
